@@ -4,16 +4,18 @@ $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require 'oncue/version'
 
 Gem::Specification.new do |gem|
-  gem.name          = "oncue"
-  gem.version       = Oncue::VERSION
+  gem.name          = "onCue"
+  gem.version       = OnCue::VERSION
   gem.authors       = ["Michael Marconi"]
   gem.email         = ["michael@modeltwozero.com"]
-  gem.description   = %q{TODO: Write a gem description}
-  gem.summary       = %q{TODO: Write a gem summary}
-  gem.homepage      = ""
+  gem.description   = %q{A Ruby API for the onCue job scheduling framework}
+  gem.summary       = %q{This API allows you to communicate with a Redis-backed onCue intance, in order to enqueue and monitor jobs}
+  gem.homepage      = "https://github.com/michaelmarconi/oncue-api"
 
   gem.files         = `git ls-files`.split($/)
   gem.executables   = gem.files.grep(%r{^bin/}).map{ |f| File.basename(f) }
   gem.test_files    = gem.files.grep(%r{^(test|spec|features)/})
   gem.require_paths = ["lib"]
+
+  gem.add_development_dependency 'rspec', '~> 2.12.0'
 end

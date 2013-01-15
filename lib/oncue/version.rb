@@ -1,3 +1,3 @@
-module Oncue
-  VERSION = "0.0.1"
+module OnCue
+  VERSION = "0.9.0"
 end

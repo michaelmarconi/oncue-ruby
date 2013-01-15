@@ -1,5 +1,5 @@
 require "oncue/version"
 
-module Oncue
+module OnCue
   # Your code goes here...
 end
