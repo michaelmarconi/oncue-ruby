@@ -1,4 +1,5 @@
 require 'redis'
+require 'time'
 require 'job'
 
 module OnCue
@@ -20,10 +21,10 @@ module OnCue
 
     # Save the job and push it onto the
     # new jobs queue in a single transaction
-    enqueued_at = Time.now
+    enqueued_at = Time.now.utc.iso8601
     redis.multi do
       job_key = JOB_KEY % { :job_id => job_id }
-      redis.hset(job_key, JOB_ENQUEUED_AT, Time.now)
+      redis.hset(job_key, JOB_ENQUEUED_AT, enqueued_at)
       redis.hset(job_key, JOB_WORKER_TYPE, worker_type)
       redis.lpush(NEW_JOBS_QUEUE, job_id)
     end

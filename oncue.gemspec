@@ -4,7 +4,7 @@ $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require 'oncue/version'
 
 Gem::Specification.new do |gem|
-  gem.name          = "onCue"
+  gem.name          = "oncue"
   gem.version       = OnCue::VERSION
   gem.authors       = ["Michael Marconi"]
   gem.email         = ["michael@modeltwozero.com"]
