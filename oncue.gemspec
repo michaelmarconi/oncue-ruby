@@ -6,6 +6,7 @@ require 'oncue/version'
 Gem::Specification.new do |gem|
   gem.name          = "oncue"
   gem.version       = OnCue::VERSION
+  gem.license       = "MIT"
   gem.authors       = ["Michael Marconi"]
   gem.email         = ["michael@modeltwozero.com"]
   gem.description   = %q{A Ruby API for the onCue job scheduling framework}
