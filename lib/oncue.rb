@@ -11,7 +11,11 @@ module OnCue
   JOB_ENQUEUED_AT = "job_enqueued_at"
   NEW_JOBS_QUEUE = "oncue:jobs:new"
 
-  def enqueue_job(worker_type)
+
+  def enqueue_job(worker_type, params={})
+    raise 'params must be a set of key-value pairs' unless params.kind_of? Hash
+
+
 
     # Connect to redis
     redis = Redis.new(:host => "localhost", :port => 6379)
