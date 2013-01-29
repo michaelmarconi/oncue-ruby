@@ -1,6 +1,7 @@
 require 'redis'
 require 'time'
 require 'job'
+require 'json'
 
 module OnCue
   extend self
@@ -41,6 +42,7 @@ module OnCue
       job_key = JOB_KEY % { :job_id => job_id }
       redis.hset(job_key, JOB_ENQUEUED_AT, enqueued_at)
       redis.hset(job_key, JOB_WORKER_TYPE, worker_type)
+      redis.hset(job_key, JOB_PARAMS, params.to_json)
       redis.lpush(NEW_JOBS_QUEUE, job_id)
     end
     return Job.new(job_id, worker_type, enqueued_at)
