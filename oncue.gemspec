@@ -11,7 +11,7 @@ Gem::Specification.new do |gem|
   gem.email         = ["michael@modeltwozero.com"]
   gem.description   = %q{A Ruby API for the onCue job scheduling framework}
   gem.summary       = %q{This API allows you to communicate with a Redis-backed onCue intance, in order to enqueue and monitor jobs}
-  gem.homepage      = "https://github.com/michaelmarconi/oncue-api"
+  gem.homepage      = "https://github.com/michaelmarconi/oncue-ruby"
 
   gem.files         = `git ls-files`.split($/)
   gem.executables   = gem.files.grep(%r{^bin/}).map{ |f| File.basename(f) }
