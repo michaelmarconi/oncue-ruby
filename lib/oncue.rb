@@ -1,6 +1,7 @@
 require 'redis'
 require 'time'
 require 'job'
+require 'oncue_exception'
 require 'json'
 
 module OnCue
@@ -27,7 +28,10 @@ module OnCue
   def enqueue_job(worker_type, params={})
     raise 'params must be a set of key-value pairs' unless params.kind_of? Hash
 
-
+    params.merge!(params) do |key, value|
+      raise OnCueException, 'nil is not a valid key' if key.nil?
+      value.nil? ? nil : value.to_s
+    end
 
     # Connect to redis
     redis = Redis.new(:host => "localhost", :port => 6379)
