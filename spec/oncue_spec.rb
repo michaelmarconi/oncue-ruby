@@ -1,215 +1,162 @@
 require 'spec_helper'
-require 'redis'
+
+require 'json'
+require 'net/http'
+require 'oncue'
+require 'oncue/configuration'
+require 'oncue/job'
 
 describe OnCue do
 
-  describe 'enqueue_job' do
-
-    let(:redis) {Redis.new(:host => "localhost", :port => 6379)}
-
-    # Grab a connection to Redis and flush the database
-    before(:each) do
-      redis.flushdb()
-    end
-
-    it 'should enqueue a new job in Redis without params' do
-
-      # Use the API to enqueue the job
-      job = OnCue.enqueue_job('oncue.workers.TestWorker')
-
-      # Now fish the job out of Redis
-      job_key = OnCue::JOB_KEY % { :job_id => 1 }
-      redis.hget(job_key, OnCue::JOB_ENQUEUED_AT).should == job.enqueued_at.to_s
-      redis.hget(job_key, OnCue::JOB_WORKER_TYPE).should == job.worker_type
-
-      # And check it is on the new jobs queue
-      redis.rpop(OnCue::NEW_JOBS_QUEUE).should == "1"
-    end
-
-    context 'with params' do
-      context 'that are not key value pairs' do
-        it 'should reject the job' do
-          expect { OnCue.enqueue_job('oncue.workers.TestWorker', ['an array']) }.to raise_error
-        end
-      end
-
-      context 'that are key value pairs ' do
-        it 'should enqueue a new job in Redis with params' do
-
-          params = {'size' => 10, 'day' => 'Tuesday'}
-          # Use the API to enqueue the job
-          job = OnCue.enqueue_job('oncue.workers.TestWorker', params)
-
-          # Now fish the job out of Redis
-          job_key = OnCue::JOB_KEY % { :job_id => 1 }
-          redis.hget(job_key, OnCue::JOB_ENQUEUED_AT).should == job.enqueued_at.to_s
-          redis.hget(job_key, OnCue::JOB_WORKER_TYPE).should == job.worker_type
-          JSON.parse(redis.hget(job_key, OnCue::JOB_PARAMS)).should == params
-
-          # And check it is on the new jobs queue
-          redis.rpop(OnCue::NEW_JOBS_QUEUE).should == "1"
-        end
-      end
-    end
-    context 'with parameter keys that are' do
-
-      let(:stored_params) do
-        job = OnCue.enqueue_job('oncue.workers.TestWorker', {key => 'value'})
-        job_key = OnCue::JOB_KEY % { :job_id => 1 }
-        JSON.parse(redis.hget(job_key, OnCue::JOB_PARAMS))
-      end
-
-      context 'nil' do
-        let(:key) {nil}
-
-        it 'throws an error' do
-          expect {stored_params}.to raise_error
-        end
-      end
-
-      context 'strings' do
-        let(:key) {'a string'}
-
-        it 'converts them to strings' do
-          stored_params.should == {'a string' => 'value'}
-        end
-      end
-
-      context 'integers' do
-        let(:key) {10}
-        it 'converts them to strings' do
-          stored_params.should == {'10' => 'value'}
-        end
-      end
-      context 'decimals' do
-        let(:key) {10.23}
-        it 'converts them to strings' do
-          stored_params.should == {'10.23' => 'value'}
-        end
-      end
-
-      context 'the boolean true' do
-        let(:key) {true}
-        it 'converts them to strings' do
-          stored_params.should == {'true' => 'value'}
-        end
-      end
-
-      context 'the boolean false' do
-        let(:key) {false}
-        it 'converts them to strings' do
-          stored_params.should == {'false' => 'value'}
-        end
-      end
-
-      context 'symbols' do
-        let(:key) {:a_symbol}
-        it 'converts them to strings' do
-          stored_params.should == {'a_symbol' => 'value'}
-        end
-      end
-
-      context 'arrays' do
-        let(:key) {[1,true,'string']}
-        it 'converts them to strings' do
-          stored_params.should == {'[1, true, "string"]' => 'value'}
-        end
-      end
-
-      context 'maps' do
-        let(:key) {{1 => false}}
-        it 'converts them to strings' do
-          stored_params.should == {'{1=>false}' => 'value'}
-        end
-      end
-
-      context 'arbitrary objects' do
-        let(:key) {Object.new}
-        it 'converts them to strings using the to_s method' do
-          stored_params.keys[0].should =~ /Object.*/
-        end
-      end
-    end
-
-    context 'with parameter values that are' do
-
-      let(:stored_params) do
-        job = OnCue.enqueue_job('oncue.workers.TestWorker', {'key' => value})
-        job_key = OnCue::JOB_KEY % { :job_id => 1 }
-        JSON.parse(redis.hget(job_key, OnCue::JOB_PARAMS))
-      end
-
-
-      context 'nil' do
-        let(:value) {nil}
-
-        it 'leaves them as nil' do
-          stored_params.should == {'key' => nil}
-        end
-      end
-
-      context 'strings' do
-        let(:value) {'a string'}
-
-        it 'converts them to strings' do
-          stored_params.should == {'key' => 'a string'}
-        end
-      end
-
-      context 'integers' do
-        let(:value) {10}
-        it 'converts them to strings' do
-          stored_params.should == {'key' => '10'}
-        end
-      end
-      context 'decimals' do
-        let(:value) {10.23}
-        it 'converts them to strings' do
-          stored_params.should == {'key' => '10.23'}
-        end
-      end
-
-      context 'the boolean true' do
-        let(:value) {true}
-        it 'converts them to strings' do
-          stored_params.should == {'key' => 'true'}
-        end
-      end
-
-      context 'the boolean false' do
-        let(:value) {false}
-        it 'converts them to strings' do
-          stored_params.should == {'key' => 'false'}
-        end
-      end
-
-      context 'symbols' do
-        let(:value) {:a_symbol}
-        it 'converts them to strings' do
-          stored_params.should == {'key' => 'a_symbol'}
-        end
-      end
-
-      context 'arrays' do
-        let(:value) {[1,true,'string']}
-        it 'converts them to strings' do
-          stored_params.should == {'key' => '[1, true, "string"]'}
-        end
-      end
-
-      context 'maps' do
-        let(:value) {{1 => false}}
-        it 'converts them to strings' do
-          stored_params.should == {'key' => '{1=>false}'}
-        end
-      end
-
-      context 'arbitrary objects' do
-        let(:value) {Object.new}
-        it 'converts them to strings using the to_s method' do
-          stored_params.should == {'key' => value.to_s}
-        end
-      end
+  after(:each) do
+    OnCue.configure do  |config|
+      config.host = 'localhost'
+      config.port = 9000
+      config.base = 'api'
     end
   end
+
+  describe '.configuration' do
+
+    subject { OnCue.configuration }
+
+    context 'called for the first time' do
+      it { should eq OnCue::Configuration.new }
+    end
+
+    context 'called after the configuration has changed' do
+
+      before do
+        OnCue.configuration.port = 1234
+      end
+
+      it { should_not eq OnCue::Configuration.new }
+
+      it do
+        should eq OnCue::Configuration.new('localhost', 1234, 'api')
+      end
+
+    end
+
+  end
+
+  describe '.configure' do
+    context 'allows configuration as a block' do
+
+      subject do
+        OnCue.configure do |config|
+          config.host = 'com.example'
+          config.port = 5678
+          config.base = 'oncue'
+        end
+      end
+
+      it do
+        should eq OnCue::Configuration.new('com.example', 5678, 'oncue')
+      end
+
+    end
+  end
+
+  describe '.enqueue_job' do
+
+    let(:worker_type) { 'com.example.Worker' }
+    let(:params) { {} }
+
+    subject(:enqueue_job) { OnCue.enqueue_job(worker_type, params) }
+
+    context 'with invalid argument' do
+
+      context 'worker_type is not a string' do
+
+        let(:worker_type) { nil }
+
+        it { expect { enqueue_job }.to raise_error ArgumentError }
+
+      end
+
+      context 'params is not nil, or a hash' do
+
+        let(:params) { 1 }
+
+        it { expect { enqueue_job }.to raise_error ArgumentError }
+
+      end
+
+    end
+
+    context 'with valid arguments' do
+
+      let(:jobs_url) { 'http://test/' }
+
+      let(:params) { {'a' => 'b'}}
+      let(:request_body) {  "{\"workerType\":\"#{worker_type}\",\"params\":#{JSON.dump(params)}}" }
+
+      let(:status) { 200 }
+      let(:response_body) { '{"id":1,"enqueuedAt":"2013-03-26T12:34:56"}' }
+
+      before do
+        OnCue.configuration.should_receive(:jobs_url).and_return(jobs_url)
+        stub_request(:post, jobs_url).
+          with(
+            body: request_body,
+            headers: {
+              'Accept'=>'application/json',
+              'Accept-Encoding'=>'gzip, deflate',
+              'Content-Length'=>'54',
+              'Content-Type'=>'application/json',
+              'User-Agent'=>'Ruby'
+            }
+          ).to_return(status: status, body: response_body, :headers => {})
+      end
+
+      context 'that succeeds' do
+
+        context 'with a valid JSON response from the server' do
+
+          it { should eq OnCue::Job.new(1, '2013-03-26T12:34:56') }
+
+        end
+
+        context 'with an invalid JSON response from the server' do
+
+          let(:response_body) { nil }
+
+          it do
+            expect { enqueue_job }.to raise_error OnCue::UnexpectedServerResponse
+          end
+
+        end
+
+      end
+
+      context 'that fails' do
+
+        context 'due to an internal server error' do
+
+          let(:status) { 500 }
+
+          it do
+            expect { enqueue_job }.to raise_error OnCue::JobNotQueuedError
+          end
+        end
+
+        context 'due to being unable to connect to the server' do
+
+          before do
+            stub_request(:post, jobs_url).to_raise(Errno::ECONNREFUSED)
+          end
+
+          it do
+            expect { enqueue_job }.to raise_error OnCue::JobNotQueuedError
+          end
+
+        end
+
+      end
+
+    end
+
+  end
+
 end
