@@ -1,12 +1,15 @@
 require 'spec_helper'
 
+require 'date'
 require 'oncue/job'
 
 describe OnCue::Job do
 
   describe '.json_create' do
 
-    let(:json) { { 'id' => 1, 'enqueuedAt' => '2013-03-26T12:34:56' } }
+    let(:id) { 1 }
+    let(:enqueued_at) { '2013-03-26T12:34:56' }
+    let(:json) { { 'id' => id, 'enqueuedAt' => enqueued_at } }
 
     subject(:created_job) { OnCue::Job.json_create(json) }
 
@@ -14,7 +17,17 @@ describe OnCue::Job do
 
       it do
         created_job.id.should eq 1
-        created_job.enqueued_at.should eq '2013-03-26T12:34:56'
+        created_job.enqueued_at.should eq DateTime.new(2013, 03, 26, 12, 34, 56)
+      end
+
+      context 'where enqueuedAt is not IS8061 formatted' do
+
+        let(:enqueued_at) { 'Thursday 28th Match 2013' }
+
+        it do
+          expect { created_job }.to raise_error ArgumentError
+        end
+
       end
 
     end

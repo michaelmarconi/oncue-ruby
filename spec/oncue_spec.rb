@@ -118,12 +118,25 @@ describe OnCue do
 
         end
 
-        context 'with an invalid JSON response from the server' do
+        context 'with an invalid JSON response' do
 
-          let(:response_body) { nil }
+          context '"nil" from the server' do
 
-          it do
-            expect { enqueue_job }.to raise_error OnCue::UnexpectedServerResponse
+            let(:response_body) { nil }
+
+            it do
+              expect { enqueue_job }.to raise_error OnCue::UnexpectedServerResponse
+            end
+          end
+
+          context 'with a non ISO8601-formatted date' do
+
+            let(:response_body) { '{"id":1,"enqueuedAt":"Thursday 28th March 2013"}' }
+
+            it do
+              expect { enqueue_job }.to raise_error OnCue::UnexpectedServerResponse
+            end
+
           end
 
         end
