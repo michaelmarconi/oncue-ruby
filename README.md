@@ -1,4 +1,4 @@
-# onCue
+# onCue Ruby client
 
 [![Build Status](https://travis-ci.org/michaelmarconi/oncue-ruby.png)](https://travis-ci.org/michaelmarconi/oncue-ruby)
 [![Code Quality](https://codeclimate.com/github/michaelmarconi/oncue-ruby.png)](https://codeclimate.com/github/michaelmarconi/oncue-ruby)
