@@ -1,3 +1,5 @@
+require 'date'
+
 module OnCue
 
   class Job
@@ -6,7 +8,7 @@ module OnCue
 
     def initialize(id, enqueued_at)
       @id = id
-      @enqueued_at = enqueued_at
+      @enqueued_at = DateTime.iso8601(enqueued_at)
     end
 
     def self.json_create(o)

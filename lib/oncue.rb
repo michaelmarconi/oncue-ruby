@@ -26,18 +26,35 @@ module OnCue
 
     request_json = JSON.dump(workerType: worker_type.to_s, params: params)
 
+    response_body = make_request(configuration.jobs_url, request_json)
+
+    raise OnCue::JobNotQueuedError if response_body.nil?
+
+    parse_enqueue_job_response(response_body)
+
+  end
+
+  private
+
+  def self.make_request(url, body)
     begin
-      response = RestClient.post(configuration.jobs_url, request_json, content_type: :json, accept: :json)
+      response = RestClient.post(url, body, content_type: :json, accept: :json)
       case response.code
         when 200
-            job_json = JSON.parse(response.body)
-            OnCue::Job.json_create(job_json)
+          return response.body
         else
-          raise OnCue::JobNotQueuedError
+          return nil
       end
     rescue RestClient::Exception, Errno::ECONNREFUSED => e
-      raise OnCue::JobNotQueuedError
-    rescue JSON::ParserError => e
+      return nil
+    end
+  end
+
+  def self.parse_enqueue_job_response(json)
+    begin
+      job_hash = JSON.parse(json)
+      OnCue::Job.json_create(job_hash)
+    rescue ArgumentError, JSON::ParserError => e
       raise OnCue::UnexpectedServerResponse
     end
   end
