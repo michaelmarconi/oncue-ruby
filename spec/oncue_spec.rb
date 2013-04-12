@@ -49,6 +49,7 @@ describe OnCue do
           config.port = 5678
           config.base = 'oncue'
         end
+        OnCue.configuration
       end
 
       it do

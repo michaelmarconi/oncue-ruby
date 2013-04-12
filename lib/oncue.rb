@@ -15,7 +15,6 @@ module OnCue
 
   def self.configure
     yield(configuration) if block_given?
-    @configuration
   end
 
   def self.enqueue_job(worker_type, params = {})
