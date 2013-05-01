@@ -23,7 +23,7 @@ module OnCue
 
     params = OnCue::Parameters.convert_param_values_to_strings(params)
 
-    request_json = JSON.dump(workerType: worker_type.to_s, params: params)
+    request_json = JSON.dump(worker_type: worker_type.to_s, params: params)
 
     response_body = make_request(configuration.jobs_url, request_json)
 
