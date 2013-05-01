@@ -91,10 +91,10 @@ describe OnCue do
       let(:jobs_url) { 'http://test/' }
 
       let(:params) { {'a' => 'b'}}
-      let(:request_body) {  "{\"workerType\":\"#{worker_type}\",\"params\":#{JSON.dump(params)}}" }
+      let(:request_body) {  "{\"worker_type\":\"#{worker_type}\",\"params\":#{JSON.dump(params)}}" }
 
       let(:status) { 200 }
-      let(:response_body) { '{"id":1,"enqueuedAt":"2013-03-26T12:34:56"}' }
+      let(:response_body) { '{"id":1,"enqueued_at":"2013-03-26T12:34:56"}' }
 
       before do
         OnCue.configuration.should_receive(:jobs_url).and_return(jobs_url)
@@ -104,7 +104,7 @@ describe OnCue do
             headers: {
               'Accept'=>'application/json',
               'Accept-Encoding'=>'gzip, deflate',
-              'Content-Length'=>'54',
+              'Content-Length'=>request_body.length,
               'Content-Type'=>'application/json',
               'User-Agent'=>'Ruby'
             }
@@ -132,7 +132,7 @@ describe OnCue do
 
           context 'with a non ISO8601-formatted date' do
 
-            let(:response_body) { '{"id":1,"enqueuedAt":"Thursday 28th March 2013"}' }
+            let(:response_body) { '{"id":1,"enqueued_at":"Thursday 28th March 2013"}' }
 
             it do
               expect { enqueue_job }.to raise_error OnCue::UnexpectedServerResponse

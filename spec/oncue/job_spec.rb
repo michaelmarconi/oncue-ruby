@@ -9,7 +9,7 @@ describe OnCue::Job do
 
     let(:id) { 1 }
     let(:enqueued_at) { '2013-03-26T12:34:56' }
-    let(:json) { { 'id' => id, 'enqueuedAt' => enqueued_at } }
+    let(:json) { { 'id' => id, 'enqueued_at' => enqueued_at } }
 
     subject(:created_job) { OnCue::Job.json_create(json) }
 
@@ -20,7 +20,7 @@ describe OnCue::Job do
         created_job.enqueued_at.should eq DateTime.new(2013, 03, 26, 12, 34, 56)
       end
 
-      context 'where enqueuedAt is not IS8061 formatted' do
+      context 'where enqueued_at is not IS8061 formatted' do
 
         let(:enqueued_at) { 'Thursday 28th Match 2013' }
 
