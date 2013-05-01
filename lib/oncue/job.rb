@@ -12,7 +12,7 @@ module OnCue
     end
 
     def self.json_create(o)
-      new(o['id'], o['enqueuedAt'])
+      new(o['id'], o['enqueued_at'])
     end
 
     def ==(other)
