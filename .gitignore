@@ -1,3 +1,4 @@
+junit.xml
 *.gem
 /Gemfile.lock
 .idea
